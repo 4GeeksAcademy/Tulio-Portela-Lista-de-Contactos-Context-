@@ -4,10 +4,10 @@ import { Context } from "../store/appContext";
 import "../../styles/demo.css";
 
 const initialValues = {
-  full_name: "",
+  name: "",
   email: "",
-  agenda_slug: "Jssolar",
-  address: "",
+  username: "",
+  address: { street: "", city: "" },
   phone: "",
 };
 
@@ -16,104 +16,98 @@ const NewContact = () => {
   const [contact, setContact] = useState(initialValues);
   const navigate = useNavigate();
   const { id } = useParams();
+
   useEffect(() => {
-    //  datos de la API
-    editContact();
-  }, []);
-  const editContact = async () => {
     if (id) {
-      await actions.getContact(id);
-    //   console.log(store.contact);
-      setContact(store.contact);
+      actions.getContact(id).then((contact) => {
+        setContact(contact);
+      });
+    }
+  }, [id]);
+
+  const handleContact = (event) => {
+    const { name, value } = event.target;
+    if (name === "street" || name === "city") {
+      setContact({ ...contact, address: { ...contact.address, [name]: value } });
     } else {
-      await actions.getContact(null);
-    //   console.log(store.contact);
+      setContact({ ...contact, [name]: value });
     }
   };
 
-  const handleContact = (event) => {
-    setContact({ ...contact, [event.target.name]: event.target.value });
-  };
   const addNewContact = async (event) => {
     event.preventDefault();
-    if (id == undefined) {
-      const response = await actions.addContacts(contact);
-      if (response) navigate("/");
+    let response;
+    if (!id) {
+      response = await actions.addContacts(contact);
     } else {
-      const response = await actions.updateContacts(contact, id);
-      setContact(initialValues);
-      if (response) navigate("/");
+      response = await actions.updateContacts(contact, id);
     }
+    if (response) navigate("/");
   };
-  const filterById = (items, id) => {
-    return items.filter((item) => item.id === id);
-  };
+
   return (
     <div className="container w-100">
-      <form
-        className="d-flex flex-column justify-content-center align-items-center"
-        onSubmit={addNewContact}
-      >
+      <form className="d-flex flex-column justify-content-center align-items-center" onSubmit={addNewContact}>
         <div className="mb-3 col-6">
-          <label htmlFor="InputFullName" className="form-label">
-            Full Name
-          </label>
+          <label htmlFor="InputFullName" className="form-label">Full Name</label>
           <input
             type="text"
             className="form-control"
             id="InputFullName"
-            name="full_name"
-            value={contact.full_name}
-            onChange={(event) => handleContact(event)}
+            name="name"
+            value={contact.name}
+            onChange={handleContact}
           />
         </div>
         <div className="mb-3 col-6">
-          <label htmlFor="InputEmail" className="form-label">
-            Email address
-          </label>
+          <label htmlFor="InputEmail" className="form-label">Email address</label>
           <input
             type="email"
             className="form-control"
             id="InputEmail"
-            aria-describedby="emailHelp"
             name="email"
             value={contact.email}
-            onChange={(event) => handleContact(event)}
+            onChange={handleContact}
           />
         </div>
         <div className="mb-3 col-6">
-          <label htmlFor="PhoneNumber" className="form-label">
-            Phone Number
-          </label>
+          <label htmlFor="PhoneNumber" className="form-label">Phone Number</label>
           <input
             type="text"
             className="form-control"
             id="PhoneNumber"
             name="phone"
             value={contact.phone}
-            onChange={(event) => handleContact(event)}
+            onChange={handleContact}
           />
         </div>
         <div className="mb-3 col-6">
-          <label htmlFor="InputAddress" className="form-label">
-            Address
-          </label>
+          <label htmlFor="InputStreet" className="form-label">Street</label>
           <input
             type="text"
             className="form-control"
-            id="InputAddress"
-            name="address"
-            value={contact.address}
-            onChange={(event) => handleContact(event)}
+            id="InputStreet"
+            name="street"
+            value={contact.address.street}
+            onChange={handleContact}
           />
         </div>
-        <button type="submit" className="btn btn-primary col-6">
-          Save
-        </button>
+        <div className="mb-3 col-6">
+          <label htmlFor="InputCity" className="form-label">City</label>
+          <input
+            type="text"
+            className="form-control"
+            id="InputCity"
+            name="city"
+            value={contact.address.city}
+            onChange={handleContact}
+          />
+        </div>
+        <button type="submit" className="btn btn-primary col-6">Save</button>
       </form>
       <Link to="/">Volver a contactos</Link>
     </div>
   );
 };
 
-export default NewContact;
+export { NewContact };
