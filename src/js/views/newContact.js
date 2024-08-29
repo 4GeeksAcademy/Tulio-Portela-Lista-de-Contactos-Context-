@@ -7,13 +7,15 @@ const initialValues = {
   name: "",
   email: "",
   username: "",
-  address: { street: "", city: "" },
+  address: "",
   phone: "",
 };
 
 const NewContact = () => {
   const { store, actions } = useContext(Context);
   const [contact, setContact] = useState(initialValues);
+  const [successMessage, setSuccessMessage] = useState(""); // Estado para mensagem de sucesso
+  const [errorMessage, setErrorMessage] = useState(""); // Estado para mensagem de erro
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -23,28 +25,39 @@ const NewContact = () => {
         setContact(contact);
       });
     }
-  }, [id]);
+  }, [id, actions]);
 
-  const handleContact = (event) => {
-    const { name, value } = event.target;
-    if (name === "street" || name === "city") {
-      setContact({ ...contact, address: { ...contact.address, [name]: value } });
-    } else {
-      setContact({ ...contact, [name]: value });
-    }
-  };
+
 
   const addNewContact = async (event) => {
     event.preventDefault();
+    setSuccessMessage(""); // Limpa mensagem de sucesso
+    setErrorMessage("");   // Limpa mensagem de erro
+
     let response;
+  try {
     if (!id) {
       response = await actions.addContacts(contact);
     } else {
       response = await actions.updateContacts(contact, id);
     }
-    if (response) navigate("/");
-  };
 
+    console.log('API response:', response); // Verifique a resposta da API
+
+    if (response) {
+      setSuccessMessage("Contact saved successfully!");
+      setTimeout(() => navigate("/"), 2000); // Navega após 2 segundos
+    } else {
+      setErrorMessage("Failed to save contact.");
+    }
+  } catch (error) {
+    console.error('Error while saving contact:', error); // Mensagem de erro detalhada
+    setErrorMessage("An error occurred while saving the contact.");
+  }
+};
+const handleContact = (event) => {
+  setContact ({...contact,[event.target.name]:event.target.value})
+}
   return (
     <div className="container w-100">
       <form className="d-flex flex-column justify-content-center align-items-center" onSubmit={addNewContact}>
@@ -56,7 +69,7 @@ const NewContact = () => {
             id="InputFullName"
             name="name"
             value={contact.name}
-            onChange={handleContact}
+            onChange={(event)=>handleContact(event)}
           />
         </div>
         <div className="mb-3 col-6">
@@ -67,7 +80,7 @@ const NewContact = () => {
             id="InputEmail"
             name="email"
             value={contact.email}
-            onChange={handleContact}
+            onChange={(event)=>handleContact(event)}
           />
         </div>
         <div className="mb-3 col-6">
@@ -78,7 +91,7 @@ const NewContact = () => {
             id="PhoneNumber"
             name="phone"
             value={contact.phone}
-            onChange={handleContact}
+            onChange={(event)=>handleContact(event)}
           />
         </div>
         <div className="mb-3 col-6">
@@ -87,25 +100,25 @@ const NewContact = () => {
             type="text"
             className="form-control"
             id="InputStreet"
-            name="street"
-            value={contact.address.street}
-            onChange={handleContact}
+            name="address"
+            value={contact.address}
+            onChange={(event)=>handleContact(event)}
           />
         </div>
-        <div className="mb-3 col-6">
-          <label htmlFor="InputCity" className="form-label">City</label>
-          <input
-            type="text"
-            className="form-control"
-            id="InputCity"
-            name="city"
-            value={contact.address.city}
-            onChange={handleContact}
-          />
-        </div>
+       
         <button type="submit" className="btn btn-primary col-6">Save</button>
       </form>
-      <Link to="/">Volver a contactos</Link>
+      {successMessage && (
+        <div className="alert alert-success mt-3">
+          {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="alert alert-danger mt-3">
+          {errorMessage}
+        </div>
+      )}
+      <Link to="/">Back to Contacts</Link>
     </div>
   );
 };

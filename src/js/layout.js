@@ -1,9 +1,10 @@
+// Layout.js
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Home } from "./views/home";
 import { Demo } from "./views/demo";
 import { Single } from "./views/single";
-import injectContext, { AppContextProvider } from "./store/appContext";
+import { AppContextProvider } from "./store/appContext"; // Corrigi a importação
 import { NewContact } from "./views/newContact";
 import ScrollToTop from "./component/scrollToTop";
 
